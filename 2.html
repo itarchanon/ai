@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARMFORECAST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            width: 80%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            appearance: none; /* Remove default styling for input */
+        }
+
+        .search-button {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-left: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .search-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .forecast-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .forecast-button:hover {
+            background-color: #0056b3;
+        }
+
+        .result-table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 600px;
+            border: 2px solid black;
+            display: none;
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .result-table th {
+            background-color: #f0f0f0;
+        }
+
+        .file-upload-container {
+            margin-bottom: 20px;
+        }
+
+        .file-upload-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">FARMFORECAST</div>
+    <div class="file-upload-container">
+        <input type="file" class="file-upload-input" id="fileInput">
+    </div>
+    <div class="search-container">
+        <input type="month" class="search-input" placeholder="เลือกเดือนและปี" id="monthInput">
+    </div>
+    <button class="forecast-button" onclick="generateForecast()">ทำนาย</button>
+
+    <table class="result-table" id="resultTable" style="display: none;"></table>
+        <thead>
+            <tr>
+                <th>วันที่ปลูก</th>
+                <th>แปลงที่</th>
+                <th>ประเภทผัก</th>
+                <th>จำนวนต้นผัก</th>
+                <th>วันที่เก็บเกี่ยว</th>
+            </tr>
+        </thead>
+        <tbody id="resultBody">
+        </tbody>
+    </table>
+
+    <script>
+        async function generateForecast() {
+            const monthInput = document.getElementById('monthInput').value;
+            if (!monthInput) {
+                alert('กรุณาเลือกเดือนและปี');
+                return;
+            }
+            if (!fileInput) {
+                alert('กรุณาอัปโหลดไฟล์');
+                return;
+            }
+
+            const resultTable = document.getElementById('resultTable');
+            const resultBody = document.getElementById('resultBody');
+            resultBody.innerHTML = ''; // Clear previous results
+
+            const formData = new FormData();
+            formData.append('month', monthInput);
+            formData.append('file', fileInput);
+
+
+            try {
+                const response = await fetch('YOUR_API_ENDPOINT', { // Replace with your API endpoint
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const forecastData = await response.json();
+
+                forecastData.forEach(data => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.plantDate}</td>
+                        <td>${data.plotOrder}</td>
+                        <td>${data.vegetableType}</td>
+                        <td>${data.plantCount}</td>
+                        <td>${data.harvestDate}</td>
+                    `;
+                    resultBody.appendChild(row);
+                });
+
+                resultTable.style.display = 'table';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>
